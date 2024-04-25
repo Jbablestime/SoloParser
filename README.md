@@ -1,4 +1,4 @@
-# Solo-Parser
+# SoloParser
 A solo.to API parser made in Python using PyQT6.
 
 ## Requirements
