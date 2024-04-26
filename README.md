@@ -39,7 +39,7 @@ python main.py
 In the application window, enter a solo.to username and click "Submit". If the username is valid, a new window will open displaying the fetched data.
 
 ## Contributing
-![CodeByAidan](https://github.com/CodeByAidan.png)
+<a href="https://github.com/CodeByAidan"><img src="https://github.com/CodeByAidan" width="50" height="50"></a>
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
