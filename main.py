@@ -1,23 +1,51 @@
+"""
+This script creates a simple GUI application using PyQt6 that fetches
+data from the solo.to API
+"""
+
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QPushButton, QLineEdit, QDialog, QHBoxLayout
-from PyQt6.QtGui import QFont, QColor
-from PyQt6.QtCore import Qt, QUrl
+from typing import Any, Dict
 
 import requests
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import (
+    QApplication,
+    QDialog,
+    QLabel,
+    QLineEdit,
+    QMainWindow,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
+
+CSS_WHITE = "color: white;"
+
 
 class DataWindow(QDialog):
-    def __init__(self, data):
+    """
+    Represents a dialog window displaying fetched data.
+    """
+
+    def __init__(self, data: Dict[str, Any]):
+        """
+        Initializes the dialog window with fetched data.
+
+        Args:
+            data: A dictionary containing fetched data.
+        """
         super().__init__()
 
         self.setWindowTitle("Fetched Data for /" + data["name"])
         self.setGeometry(200, 200, 400, 200)
 
-        self.layout = QVBoxLayout()
+        self.layout: QVBoxLayout = QVBoxLayout()
         self.setLayout(self.layout)
 
         for endpoint, value in data.items():
             endpoint_label = QLabel(f"<b>{endpoint}</b>: {value}")
-            endpoint_label.setStyleSheet("color: white;")
+            endpoint_label.setStyleSheet(CSS_WHITE)
             self.layout.addWidget(endpoint_label)
 
             line = QLabel("<hr>")
@@ -32,8 +60,17 @@ class DataWindow(QDialog):
             """
         )
 
+
 class SoloToApp(QMainWindow):
+    """
+    Represents the main application window for the solo.to API parser.
+    """
+
     def __init__(self):
+        """
+        Initializes the main application window for the solo.to API Parser.
+        """
+
         super().__init__()
 
         self.setWindowTitle("solo.to API Parser")
@@ -48,7 +85,7 @@ class SoloToApp(QMainWindow):
         self.username_label = QLabel("Enter solo.to username:")
         self.username_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.username_label.setFont(QFont("Arial", 12))
-        self.username_label.setStyleSheet("color: white;")
+        self.username_label.setStyleSheet(CSS_WHITE)
         self.layout.addWidget(self.username_label)
 
         self.username_input = QLineEdit()
@@ -84,10 +121,12 @@ class SoloToApp(QMainWindow):
         self.button.clicked.connect(self.fetch_data)
         self.layout.addWidget(self.button)
 
+        self.data_window = None
+
         self.result_label = QLabel("")
         self.result_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.result_label.setFont(QFont("Arial", 12))
-        self.result_label.setStyleSheet("color: white;")
+        self.result_label.setStyleSheet(CSS_WHITE)
         self.layout.addWidget(self.result_label)
 
         self.setStyleSheet(
@@ -99,18 +138,21 @@ class SoloToApp(QMainWindow):
         )
 
     def fetch_data(self):
+        """
+        Fetches data from the solo.to API based on the entered username
+        and displays the result.
+        """
         username = self.username_input.text()
-        solo_to_api_url = f'https://api.solo.to/{username}'
+        solo_to_api_url = f"https://api.solo.to/{username}"
 
-        headers = {
-            'User-Agent': 'Jb/1.0.0'
-        }
-        
+        headers = {"User-Agent": "Jb/1.0.0"}
+
         try:
-            response = requests.get(solo_to_api_url, headers=headers)
+            response = requests.get(solo_to_api_url, headers=headers, timeout=10)
             data = response.json()
 
-            if 'error' in data:
+            error_messages = ["error", "page reserved or blocked", "page not found"]
+            if any(message in data.values() for message in error_messages):
                 self.result_label.setText("Enter a valid username.")
             else:
                 self.open_data_window(data)
@@ -118,12 +160,22 @@ class SoloToApp(QMainWindow):
         except requests.exceptions.RequestException:
             self.result_label.setText("Please enter a valid username.")
 
-    def open_data_window(self, data):
+    def open_data_window(self, data: Dict[str, Any]):
+        """
+        Opens a dialog window to display fetched data.
+
+        Args:
+            data: A dictionary containing fetched data.
+        """
         self.data_window = DataWindow(data)
         self.data_window.exec()
 
 
 def main():
+    """
+    Initializes the application, sets the style, shows the main window,
+    and starts the application event loop.
+    """
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
     window = SoloToApp()
